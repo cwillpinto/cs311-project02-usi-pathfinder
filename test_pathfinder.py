@@ -16,7 +16,7 @@ def make_graph(nodes, edges):
 
 
 def oracle(nodes, edges, start, closed=()):
-    """Independent repeated-relaxation costs; no priority queue or student records."""
+    """Compute expected costs without calling the student routing functions."""
     distance = dict.fromkeys(nodes, float('inf'))
     distance[start] = 0
     for _ in range(len(nodes) - 1):

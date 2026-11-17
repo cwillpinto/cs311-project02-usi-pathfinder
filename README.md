@@ -1,58 +1,62 @@
 # Project 2 USI Pathfinder
 
-CS311 · 100 points · Course Projects · due December 9, 2026 at 11:59 PM Central.
-Read **Project 2 USI Pathfinder.md** and **Peer Review.md**, supplied here. The map uses USI building names with illustrative connections and travel minutes. It is not actual campus navigation data. Implement Dijkstra; A* is comparison material only.
+CS311 · 100 points · Due December 9, 2026 at 11:59 PM Central
 
-## Starter repository
+Build a campus routing program that finds shortest routes and handles closed connections. Read **Project 2 USI Pathfinder.pdf** for the assignment and rubric, and **Peer Review.md** for the review instructions. The map uses familiar USI names with made-up connections and walking times.
 
-https://github.com/cwillpinto/cs311-project02-usi-pathfinder
+## Get started
 
-Choose **Use this template** to create a repository under your own account, then clone your new repository. The ZIP is a contingency download.
+Open https://github.com/cwillpinto/cs311-project02-usi-pathfinder and choose **Use this template**. Create the new repository under your own account, then clone it to your computer. If you use the ZIP instead, extract it and add the files to your own repository.
 
-## Start
-Use Python 3.11+; no third-party dependencies. From this directory:
+You need Python 3.11 or later. There are no packages to install. From the project folder, run:
 
 ```sh
 python -m unittest -v test_pathfinder.py
 python run_campus_sim.py
 ```
 
-The unchanged starter intentionally fails with NotImplementedError. Complete `Graph`, `dijkstra`, and `campus_route` in `pathfinder.py`. Keep `campus_map_data.py`, `test_pathfinder.py`, and `run_campus_sim.py` unchanged. The simulator runs the supplied tests before issuing its Final Token. A token covers those checks, not universal correctness or authorship.
+The starter raises `NotImplementedError` until you finish the missing methods and functions in `pathfinder.py`. Keep `campus_map_data.py`, `test_pathfinder.py`, and `run_campus_sim.py` unchanged.
 
-## First check
-SCI to UC costs 3. Closing SCI–UC forces SCI–LIB–UC at cost 5; reopening restores 3. BEC to UC changes from 7 to 9 while that edge is closed. Preserve base adjacency and old returned route records. Project return value is `(travel_time, path)`, or `None` if unreachable. No extra closure argument: the Graph owns `closed_edges`.
+## Build and check your routes
+
+Complete `Graph`, `dijkstra`, and `campus_route`. Use `heapq` for Dijkstra's priority queue. A* is covered in class but is not required for this project.
+
+Start with SCI → UC. The cost should be 3. Close that connection and check the route through LIB, which costs 5. Reopen it and check that the cost returns to 3. BEC → UC should change from 7 to 9 when SCI–UC is closed.
+
+Store closures in `Graph.closed_edges`; keep the original adjacency list intact. Each route request should use the current closures and leave previously returned results alone. Return `(travel_time, path)`, or `None` when no route exists.
 
 ## Files
-- `campus_map_data.py`: 10 waypoints, 16 undirected weighted edges; coordinates are map units, weights are minutes.
-- `pathfinder.py`: intentionally incomplete graph and routing implementation.
-- `test_pathfinder.py`: route validity, optimal cost and closure/regression checks.
-- `run_campus_sim.py`: supplied 10-schedule simulation and Final Token.
-- `Project 2 USI Pathfinder.md/.docx/.pdf`: full assignment.
-- `Peer Review.md`: cold-run, feedback and reflection process.
-- `Examples/pathfinding_demo.py`: near-BEC lecture example; run `python Examples/pathfinding_demo.py`. It returns `(path, cost)`, unlike the project interface. It is not a finished project implementation.
 
-## Work in your own repository
-Use the instructor template above: choose **Use this template** under your own account, then clone your new repository. For the attached ZIP fallback, extract it, create your own empty GitHub repository, initialize Git locally, commit, and add your student-owned URL as origin. Verify `git remote -v` before pushing.
+- `pathfinder.py`: the graph and routing code you complete.
+- `campus_map_data.py`: 10 waypoints and 16 undirected connections. Coordinates describe positions; edge weights give travel minutes.
+- `test_pathfinder.py`: checks for shortest routes, legal paths, closures, and repeated requests.
+- `run_campus_sim.py`: runs the tests and 10 schedules, then prints a Final Token if its checks pass.
+- `Project 2 USI Pathfinder.md/.docx/.pdf`: the assignment, rubric, and submission checklist.
+- `Peer Review.md`: instructions for reviewing a classmate's project.
+- `Examples/pathfinding_demo.py` and `Examples/Pathfinding Code Guide.md`: the smaller example from class and its line-by-line explanation.
 
-If directly cloning an instructor starter instead of using a template, create your own empty repository first, then replace the student-owned URL placeholder below with your own URL:
+Run the class example with `python Examples/pathfinding_demo.py`. It compares the original route, the quad shortcut, and a closed connection. Its functions return `(path, cost)`; the project functions return `(travel_time, path)`.
+
+## If you clone the instructor repository directly
+
+Create an empty repository under your own account first. Then run these commands, replacing `<your-repository-url>` with its URL:
 
 ```sh
 git clone https://github.com/cwillpinto/cs311-project02-usi-pathfinder
 cd cs311-project02-usi-pathfinder
 git remote rename origin upstream
-git remote add origin <student-owned-repository-url>
+git remote add origin <your-repository-url>
 git remote -v
 git branch --show-current
 git push -u origin main
 ```
 
-Use your actual branch name if it is not main. The instructor repository is upstream; push completed work only to your own origin. The verified instructor template above is the upstream source; completed work belongs in your own repository.
+Before pushing, check that `origin` is your repository and `upstream` is the instructor's. If your branch has a different name, use that name instead of `main`.
 
 ## Submit in Blackboard
-Submit your student-owned repository URL and final commit SHA, with final commit tagged `v1.0-final`. Include `DESIGN.md`, completed `pathfinder.py`, supplied data/tests/simulator, a README with terminal instructions, `Complexity_Audit.md` or `.pdf`, `Peer_Review_Given.md`/`.pdf`, `Peer_Review_Received.md`/`.pdf`, and `Peer_Review_Reflection.md` (5–10 sentences). Paste the Final Token and include a screenshot plus the raw log from the same run. Preserve meaningful commit history; omit caches, environments and credentials. See the handout for the approved rubric and terminal-only grading rule.
 
-## Code walkthrough
+Submit your repository URL, final commit SHA, and `v1.0-final` tag. Include the completed code, supplied data/tests/simulator, `DESIGN.md`, a README with run instructions, and `Complexity_Audit.md` or `.pdf`.
 
-The lecture example uses BEC, Liberal Arts (LA), Arts Center (AC), Starbucks at Rice Library (SB), and Chick-fil-A at UC West (CF). Its links and minute weights are illustrative; the full project keeps the original supplied dataset and node IDs. Starbucks and Chick-fil-A are not sponsors of these slides or example.
+Also include `Peer_Review_Given.md`/`.pdf`, `Peer_Review_Received.md`/`.pdf`, and `Peer_Review_Reflection.md` (5–10 sentences). Paste the Final Token in Blackboard and attach a screenshot and raw terminal log from the same run. Enter your own USI username when prompted.
 
-Read `Examples/Pathfinding Code Guide.md` for every line, symbol and return value. `Examples/pathfinding_demo.py` contains the same complete functions with explanatory comments. Run `python Examples/pathfinding_demo.py`: both algorithms return the BEC–LA–CF route at 7 illustrative minutes. These lecture functions return `(path, cost)`; the project returns `(travel_time, path)` or `None`.
+Keep your development history. Leave out Python caches, virtual environments, and credentials. Passing the supplied checks is required, but you should also test the additional cases described in the handout. The handout contains the full rubric and terminal-only grading rule.

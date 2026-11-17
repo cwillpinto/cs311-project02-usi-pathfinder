@@ -17,10 +17,8 @@ class Graph:
 
     def __init__(self) -> None:
         self.adjacency: Dict[Node, List[Tuple[Node, float]]] = {}
-        # Closures are tracked separately from the base adjacency list
-        # (a set of frozenset({a, b}) pairs) so a "reopen" doesn't
-        # require rebuilding the graph -- see the Pro-Tip in the
-        # project doc.
+        # Keep closed pairs separate so reopening an edge restores access
+        # without rebuilding the adjacency list.
         self.closed_edges: Set[frozenset] = set()
 
     def add_node(self, node: Node) -> None:
@@ -38,12 +36,12 @@ class Graph:
         raise NotImplementedError
 
     def reopen_edge(self, a: Node, b: Node) -> None:
-        """Un-mark a previously closed edge."""
+        """Reopen the connection between a and b."""
         # TODO
         raise NotImplementedError
 
     def neighbors(self, node: Node) -> List[Tuple[Node, float]]:
-        """Return (neighbor, weight) pairs for `node`, EXCLUDING any currently-closed edges."""
+        """Return (neighbor, weight) pairs for edges that are currently open."""
         # TODO
         raise NotImplementedError
 

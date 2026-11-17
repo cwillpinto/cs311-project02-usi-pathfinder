@@ -5,8 +5,7 @@ Do not modify this supplied simulator. Complete
 pathfinder.py instead.
 
 Run: python run_campus_sim.py
-Prints the Final Token (this course's Success Token, under the name
-the project doc uses) only if every check below passes.
+Prints a Final Token after the tests and schedule checks pass.
 """
 
 import base64
@@ -33,15 +32,12 @@ SCHEDULES = [
     ["RH2", "PAC", "LIB", "SCI", "RH2"],
 ]
 
-# Closure triggered mid-simulation, between schedule index 4 and 5.
-# Chosen because it sits on SCI-UC, a common corridor in several of
-# the routes above -- see README.md for how this was confirmed.
+# Close SCI–UC after schedule 5, then check the earlier routes again.
 CLOSURE_EDGE = ("SCI", "UC")
 
 
 def get_student_id() -> str:
-    """Prompt for the student's USI username; baked into the Success Token
-    so a copied/shared token decodes to someone else's name, not yours."""
+    """Ask for the USI username to include in the run's token."""
     student_id = input("Enter your USI username (e.g. cwill): ").strip()
     while not student_id:
         student_id = input("Username cannot be blank. Enter your USI username: ").strip()

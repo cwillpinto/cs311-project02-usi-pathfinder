@@ -1,8 +1,8 @@
 # Pathfinding code explained
 
-The lecture uses a schematic trip from BEC to Chick-fil-A (CF), via Liberal Arts (LA). Starbucks in Rice Library is SB; Arts Center is AC. Named destinations are familiar campus places; edge links/minute values are chosen for teaching. Starbucks and Chick-fil-A are not sponsors of these slides.
+The lecture uses a schematic trip from BEC to Chick-fil-A (CF), via Liberal Arts (LA). Starbucks in Rice Library is SB; Arts Center is AC. The places are real; the connections and travel times are made up for class.
 
-## Input and variable contracts
+## Inputs and variable names
 
 `graph` maps each place ID to `(neighbor, minutes)` pairs. Undirected edges appear both ways. Inputs use known string IDs and finite nonnegative weights. This small lecture function assumes valid inputs; it is not a full input validator. `start` is BEC, `goal` is CF. Each call creates its own best/parent/heap records.
 
@@ -12,163 +12,163 @@ The lecture uses a schematic trip from BEC to Chick-fil-A (CF), via Liberal Arts
 
 `def build_route(parent, goal):`
 
-Receive the predecessor dictionary and destination ID; this helper returns only the ordered place list.
+Use `parent` to build the list of places from the start to `goal`.
 
 `route = []`
 
-Create a fresh list; do not reuse or mutate an earlier returned route.
+Start a new list for this route.
 
 `current = goal`
 
-Begin at CF because each predecessor points back toward BEC.
+Start at the destination, CF, and follow the parents back toward BEC.
 
 `while current is not None:`
 
-Follow predecessors until the source sentinel None is reached. BEC itself is included.
+Keep going until `current` reaches `None`, the parent of BEC.
 
 `route.append(current)`
 
-Save the current place: first CF, then LA, then BEC in this run.
+Add the current place to the route. Here the order is CF, LA, BEC.
 
 `current = parent[current]`
 
-Replace current with the place immediately before it; the search saved that link when a cost improved.
+Move to the previous place stored in `parent`.
 
 `route.reverse()`
 
-The saved order is goal-to-source. Reverse the same list in place into BEC, LA, CF.
+Reverse the list to get BEC, LA, CF.
 
 `return route`
 
-Give the ordered list back to the calling search; reverse() itself would return None, so do not return route.reverse().
+Return the finished list. Call `reverse()` first; it changes the list and returns `None`.
 
 ## dijkstra
 
 `def dijkstra(graph, start, goal):`
 
-Receive the adjacency dictionary and known source/destination IDs. Here start is BEC and goal is CF.
+Take the graph, starting place, and destination as arguments.
 
 `best, parent = {start: 0}, {start: None}`
 
-Create two fresh dictionaries per request. best stores the cheapest discovered actual cost g; parent stores one predecessor. The source costs zero and has no predecessor.
+Start fresh for each request: `best` stores costs and `parent` stores predecessors. The start costs zero and has no predecessor.
 
 `heap = [(0, start)]`
 
-Queue one (cost, place) candidate. One element is already a valid heap, so heapify is unnecessary.
+Put `(0, start)` in the heap. A list with one entry needs no `heapify()` call.
 
 `while heap:`
 
-Continue while a candidate remains. Popping removes an entry; improvements can add entries. An empty frontier ends the search.
+Keep searching while the heap has entries.
 
 `cost, u = heapq.heappop(heap)`
 
-Remove the smallest tuple and unpack it. cost is total start-to-u cost; u is the current place, for example LA. Equal costs compare the string IDs, so CF precedes SB.
+Pop the cheapest entry into `cost` and `u`. Equal costs are ordered by the string IDs, so CF comes before SB.
 
 `if cost != best[u]:`
 
-Reject an obsolete candidate whose queued cost no longer equals the current best record. Improvements push a new entry rather than editing an old priority.
+Skip this entry if a cheaper cost for `u` has been saved since it was queued.
 
 `continue`
 
-Skip the remainder of this loop iteration and pop another candidate. This prevents an obsolete candidate from expanding neighbors or triggering an early goal return.
+Skip the remaining lines in this iteration and go back to the heap.
 
 `if u == goal:`
 
-Test whether the current, non-stale place is the destination. Nonnegative weights make this minimum-cost goal removal safe for Dijkstra.
+If this current entry is the goal, Dijkstra has found a cheapest route because the weights are nonnegative.
 
 `return build_route(parent, goal), cost`
 
-Return a tuple (ordered path, actual cost). The helper follows parents; it does not recompute the cost.
+Build the path from the parents and return it with the cost.
 
 `for v, weight in graph[u]:`
 
-Iterate over u's adjacency list. Unpack each (neighbor ID, edge minutes) pair into v and weight. u stays fixed during this neighbor loop.
+Visit each neighbor `v` of `u`; `weight` is the cost of that edge.
 
 `new_cost = cost + weight`
 
-Propose a route through u: full cost already traveled plus the single u-to-v edge. At LA, 4 + 3 proposes CF at 7.
+Add the edge cost to the cost so far. From LA to CF, this is 4 + 3 = 7.
 
 `if new_cost < best.get(v, float("inf")):`
 
-Look up the prior best cost for v. If unseen, use infinity as a comparison default without inserting it. Strict < accepts only improvements; equal routes retain the earlier parent.
+Use infinity if `v` has not been reached. Update only for a cheaper route; an equal cost keeps the earlier parent.
 
 `best[v], parent[v] = new_cost, u`
 
-Remember both the improved total and the predecessor that achieves it. Keeping them together lets reconstruction agree with the reported cost.
+Save the improved cost and the parent that gave that cost.
 
 `heapq.heappush(heap, (new_cost, v))`
 
-Queue the improved offer and restore heap ordering. Older entries may remain; the stale check makes them harmless.
+Push the improved entry. The stale check will skip older entries later.
 
 `return None, float("inf")`
 
-This is after the while loop: the frontier ran out without reaching the goal. Return (None, infinity), not zero, because no route was found.
+If the heap empties without reaching the goal, return `(None, infinity)`.
 
 ## a_star
 
 `def a_star(graph, start, goal, h):`
 
-Receive the same graph/source/goal and a dictionary of lower-bound remaining costs to this fixed goal. h uses minutes, not uncalibrated coordinate distance.
+Use the same inputs as Dijkstra, plus `h`, a dictionary of lower-bound estimates in minutes.
 
 `best, parent = {start: 0}, {start: None}`
 
-Create two fresh dictionaries per request. best stores the cheapest discovered actual cost g; parent stores one predecessor. The source costs zero and has no predecessor.
+Start fresh for each request: `best` stores costs and `parent` stores predecessors. The start costs zero and has no predecessor.
 
 `heap = [(h[start], 0, start)]`
 
-Queue (f, g, place). Since g at the source is zero, f = 0 + h[start]. At BEC this is (4, 0, BEC).
+Queue `(f, g, place)`. At BEC, `g=0` and `h=4`, so the first entry is `(4, 0, BEC)`.
 
 `while heap:`
 
-Continue while a candidate remains. Popping removes an entry; improvements can add entries. An empty frontier ends the search.
+Keep searching while the heap has entries.
 
 `_, g, u = heapq.heappop(heap)`
 
-Choose smallest f first, then g, then comparable place ID. _ is an ordinary variable name conventionally used for an unneeded value: it receives f. g and u are still needed.
+Pop the smallest `f`, breaking ties by `g` and place ID. `_` receives `f`, which this line no longer needs.
 
 `if g != best[u]:`
 
-Compare actual queued g with actual best g. Comparing f against best[u] would mix estimated and actual costs and reject valid candidates.
+Compare `g` with `best[u]`. Both are actual costs; `f` also includes an estimate.
 
 `continue`
 
-Skip the remainder of this loop iteration and pop another candidate. This prevents an obsolete candidate from expanding neighbors or triggering an early goal return.
+Skip the remaining lines in this iteration and go back to the heap.
 
 `if u == goal:`
 
-Test for a current goal after the stale check. A* needs the stated lower-bound heuristic, h(goal)=0 and correct improvement/reopening assumptions; nonnegative weights alone are not enough.
+Check for the goal after skipping stale entries. This A* version uses lower-bound estimates, `h[goal]=0`, and permits later improvements.
 
 `return build_route(parent, goal), g`
 
-Return actual travel cost g, not estimated priority f. At the goal the chosen h is zero, but the return contract should still explicitly use g.
+Return the path and its actual cost `g`.
 
 `for v, weight in graph[u]:`
 
-Iterate over u's adjacency list. Unpack each (neighbor ID, edge minutes) pair into v and weight. u stays fixed during this neighbor loop.
+Visit each neighbor `v` of `u`; `weight` is the cost of that edge.
 
 `new_g = g + weight`
 
-Relax using actual traveled cost only. Do not add the heuristic to an edge weight or accumulate it into best.
+Add the edge weight to `g`. Keep the estimate out of the actual cost.
 
 `if new_g < best.get(v, float("inf")):`
 
-Compare the new actual cost with the old actual cost, using infinity for an unseen neighbor.
+Check whether `new_g` improves the saved cost, using infinity for an unseen neighbor.
 
 `best[v], parent[v] = new_g, u`
 
-Record the improved actual cost and predecessor exactly as in Dijkstra.
+Save the improved cost and parent, as in Dijkstra.
 
 `entry = (new_g + h[v], new_g, v)`
 
-Build the full candidate: first f = new_g + remaining estimate, then actual g, then ID. CF receives (7, 7, CF); SB receives (8, 7, SB).
+Queue `f`, `g`, and the place ID. CF gets `(7, 7, CF)`; SB gets `(8, 7, SB)`.
 
 `heapq.heappush(heap, entry)`
 
-Queue the new priority. Requeue any genuine improvement, including one to a previously expanded place; no permanent closed set discards it.
+Push the new entry, even if the place was expanded earlier. A cheaper route must still be considered.
 
 `return None, float("inf")`
 
-This is after the while loop: the frontier ran out without reaching the goal. Return (None, infinity), not zero, because no route was found.
+If the heap empties without reaching the goal, return `(None, infinity)`.
 
 ## Why the stale check matters
 
@@ -186,7 +186,7 @@ The final project uses its original 10-waypoint campus_map_data.py and Graph-own
 
 ## Run
 
-From the starter root: `python Examples/pathfinding_demo.py`. The main guard runs assertions and prints both results when executed directly; importing the module defines the functions/data without running those demonstration prints.
+From the starter root: `python Examples/pathfinding_demo.py`. Running the file checks the examples and prints the results. Importing it does not run those examples.
 
 ## Campus location sources
 
