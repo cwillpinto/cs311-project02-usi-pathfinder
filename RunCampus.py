@@ -4,7 +4,7 @@ Project 2: USI Pathfinder -- simulator + verification.
 Do not modify this supplied simulator. Complete
 pathfinder.py instead.
 
-Run: python run_campus_sim.py
+Run: python RunCampus.py
 Prints a Final Token after the tests and schedule checks pass.
 """
 
@@ -13,7 +13,7 @@ import hashlib
 import sys
 import unittest
 
-from campus_map_data import EDGES, WAYPOINTS
+from CampusMap import EDGES, WAYPOINTS
 from pathfinder import Graph, campus_route
 
 ASSIGNMENT_ID = "PROJECT2"
@@ -87,7 +87,7 @@ def path_uses_edge(path: list, a: str, b: str) -> bool:
 
 
 def main() -> int:
-    from test_pathfinder import PathfinderChecks
+    from TestPathfinder import PathfinderChecks
     suite = unittest.defaultTestLoader.loadTestsFromTestCase(PathfinderChecks)
     result = unittest.TextTestRunner(verbosity=1).run(suite)
     if not result.wasSuccessful():

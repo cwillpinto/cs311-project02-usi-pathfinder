@@ -2,7 +2,7 @@
 Project 2: USI Pathfinder -- starter.
 
 Complete Graph, dijkstra, and campus_route below. See
-Project 2 USI Pathfinder.md for full phase-by-phase requirements.
+Project 2 USI Pathfinder.pdf for the assignment requirements.
 """
 
 import heapq
